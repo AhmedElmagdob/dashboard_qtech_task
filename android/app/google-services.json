@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "433804596993",
+    "project_id": "qtech-dashboard-taks",
+    "storage_bucket": "qtech-dashboard-taks.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:433804596993:android:244588b730940d1283ad00",
+        "android_client_info": {
+          "package_name": "com.example.dashboard_qtech_task"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-Z9TslXqM1AyFuFZMhbIYp1zCg0ObNm4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
