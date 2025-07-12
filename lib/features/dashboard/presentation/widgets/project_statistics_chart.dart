@@ -7,11 +7,13 @@ import '../../../../features/files/presentation/bloc/file_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ProjectStatisticsChart extends StatelessWidget {
-  const ProjectStatisticsChart({Key? key}) : super(key: key);
+  final FileBloc fileBloc;
+  const ProjectStatisticsChart({Key? key, required this.fileBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FileBloc, FileState>(
+      bloc: fileBloc,
       builder: (context, fileState) {
         int largeFileCount = 0;
         int smallFileCount = 0;

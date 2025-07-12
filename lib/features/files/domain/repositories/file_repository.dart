@@ -3,9 +3,17 @@ import 'dart:io';
 import 'dart:typed_data';
 
 abstract class FileRepository {
-  Future<void> uploadFile({File? file, Uint8List? bytes, required String fileName});
+  Future<void> uploadFile(
+      {File? file, Uint8List? bytes, required String fileName});
+
   Future<List<FileEntity>> listFiles();
+
+  Future<(List<FileEntity>, bool)> listFilesWithCacheFlag(
+      {required bool isOnline});
+
   Future<void> deleteFile(String fileKey);
+
   Future<Uint8List> downloadFile(String fileKey);
+
   Stream<List<FileEntity>> watchFiles();
-} 
+}

@@ -31,9 +31,17 @@ class TopBar extends StatelessWidget {
       child: Container(
         height: 60,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
+            // Show hamburger menu on mobile (isWide == false)
+            if (!isWide && onSidebarToggle != null)
+              IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: onSidebarToggle,
+                tooltip: 'Open Sidebar',
+              ),
+            // Show arrow/menu toggle on wide screens
             if (isWide && onSidebarToggle != null)
               IconButton(
                 icon: AnimatedSwitcher(
@@ -48,7 +56,7 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 8),
             const Text(
               'Project Dashboard',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Spacer(),
             AnimatedSwitcher(
@@ -73,11 +81,8 @@ class TopBar extends StatelessWidget {
               icon: const Icon(Icons.notifications),
               onPressed: () {},
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: CircleAvatar(
-                child: Text('J'),
-              ),
+            CircleAvatar(
+              child: Text('J'),
             ),
           ],
         ),

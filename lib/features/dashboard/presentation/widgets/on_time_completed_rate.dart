@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/sidebar_cubit.dart';
 
 class OnTimeCompletedRate extends StatelessWidget {
-  const OnTimeCompletedRate({Key? key}) : super(key: key);
+  final SidebarCubit sidebarCubit;
+  const OnTimeCompletedRate({Key? key, required this.sidebarCubit}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SidebarCubit, SidebarState>(
+      bloc: sidebarCubit,
       builder: (context, sidebarState) {
         return _OnTimeCompletedRateContent(sidebarState: sidebarState);
       },
@@ -17,7 +19,7 @@ class OnTimeCompletedRate extends StatelessWidget {
 
 class _OnTimeCompletedRateContent extends StatelessWidget {
   final SidebarState sidebarState;
-  
+
   const _OnTimeCompletedRateContent({required this.sidebarState});
 
   @override
@@ -46,7 +48,8 @@ class _OnTimeCompletedRateContent extends StatelessWidget {
               const Expanded(
                 child: Text(
                   'On Time Completed Rate',
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13), // smaller font
+                  style: TextStyle(fontWeight: FontWeight.w500,
+                      fontSize: 13), // smaller font
                 ),
               ),
               Container(
@@ -54,10 +57,12 @@ class _OnTimeCompletedRateContent extends StatelessWidget {
                   color: pillColor,
                   borderRadius: BorderRadius.circular(5),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // more compact
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                // more compact
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_upward_sharp,color: pillTextColor, size: 13,), // smaller icon
+                    Icon(Icons.arrow_upward_sharp, color: pillTextColor,
+                      size: 13,), // smaller icon
                     Text(
                       '10 %',
                       style: TextStyle(
@@ -77,22 +82,26 @@ class _OnTimeCompletedRateContent extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Complete Project',
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13), // smaller font
+                  style: TextStyle(fontWeight: FontWeight.w500,
+                      fontSize: 13), // smaller font
                 ),
               ),
               Text(
                 '50 %',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13), // smaller font
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 13), // smaller font
               ),
             ],
           ),
           const SizedBox(height: 4), // reduced from 8
           ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(3)), // smaller radius
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+            // smaller radius
             child: LinearProgressIndicator(
               value: 0.5,
               minHeight: 4, // reduced from 6
-              backgroundColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.grey[200],
+              backgroundColor: theme.brightness == Brightness.dark ? Colors
+                  .white10 : Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BFA5)),
             ),
           ),
@@ -100,4 +109,4 @@ class _OnTimeCompletedRateContent extends StatelessWidget {
       ),
     );
   }
-} 
+}

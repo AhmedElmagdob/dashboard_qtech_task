@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/sidebar_cubit.dart';
 
 class DailyTaskList extends StatelessWidget {
-  const DailyTaskList({Key? key}) : super(key: key);
+  final SidebarCubit sidebarCubit;
+  const DailyTaskList({Key? key, required this.sidebarCubit}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SidebarCubit, SidebarState>(
+      bloc: sidebarCubit,
       builder: (context, sidebarState) {
         return _DailyTaskListContent(sidebarState: sidebarState);
       },

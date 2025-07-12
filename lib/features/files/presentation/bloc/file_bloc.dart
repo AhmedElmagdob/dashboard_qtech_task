@@ -12,6 +12,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 import 'dart:io' as io;
 import 'dart:async';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class FileBloc extends Bloc<FileEvent, FileState> {
   final ListFilesUseCase listFilesUseCase;
@@ -21,6 +23,9 @@ class FileBloc extends Bloc<FileEvent, FileState> {
   final DropFileUseCase dropFileUseCase;
   final ResetDropzoneUseCase resetDropzoneUseCase;
   StreamSubscription<List<FileEntity>>? _filesSubscription;
+  StreamSubscription? _connectivitySubscription;
+  bool _wasOffline = false;
+  bool _isOnline = true;
 
   FileBloc({
     required this.listFilesUseCase,
@@ -56,6 +61,20 @@ class FileBloc extends Bloc<FileEvent, FileState> {
         emit(DropzoneError('Failed to pick file: $e'));
       }
     });
+    on<ConnectivityChangedEvent>((event, emit) {
+      _isOnline = event.isOnline;
+      emit(ConnectivityStatusChanged(event.isOnline));
+      if (event.isOnline) {
+        if (_wasOffline) {
+          add(LoadFilesEvent());
+          _wasOffline = false;
+        }
+      } else {
+        _wasOffline = true;
+        // Always try to load from cache when going offline
+        add(LoadFilesEvent());
+      }
+    });
     on<StartListeningFilesEvent>((event, emit) {
       _filesSubscription?.cancel();
       _filesSubscription = listFilesUseCase.repository.watchFiles().listen((files) {
@@ -70,10 +89,24 @@ class FileBloc extends Bloc<FileEvent, FileState> {
         }
         add(_FilesUpdatedEvent(files, largeFileCount, smallFileCount));
       });
+      // Listen to connectivity changes
+      _connectivitySubscription?.cancel();
+      _connectivitySubscription = InternetConnection().onStatusChange.listen((InternetStatus status) {
+        switch (status) {
+          case InternetStatus.connected:
+            add(ConnectivityChangedEvent(true));
+            break;
+          case InternetStatus.disconnected:
+            add(ConnectivityChangedEvent(false));
+            break;
+        }
+      });
     });
     on<StopListeningFilesEvent>((event, emit) {
       _filesSubscription?.cancel();
       _filesSubscription = null;
+      _connectivitySubscription?.cancel();
+      _connectivitySubscription = null;
     });
     on<_FilesUpdatedEvent>((event, emit) {
       emit(FileLoaded(event.files, largeFileCount: event.largeFileCount, smallFileCount: event.smallFileCount));
@@ -83,29 +116,32 @@ class FileBloc extends Bloc<FileEvent, FileState> {
   @override
   Future<void> close() {
     _filesSubscription?.cancel();
+    _connectivitySubscription?.cancel();
     return super.close();
   }
 
   void _onLoadFiles(LoadFilesEvent event, Emitter<FileState> emit) async {
+    if (!_isOnline) {
+      // Offline: load from cache only, never show shimmer
+      final (files, isFromCache) = await listFilesUseCase.callWithCacheFlag(isOnline: false);
+      if (files.isEmpty) {
+        emit(NoDataAvailable());
+      } else {
+        emit(FileLoaded(files, largeFileCount: files.where((f) => f.size > 2 * 1024 * 1024).length, smallFileCount: files.where((f) => f.size <= 2 * 1024 * 1024).length, isFromCache: true));
+      }
+      return;
+    }
+    // Online: normal loading
     try {
       emit(FileLoading());
-      final files = await listFilesUseCase();
-      
-      // Calculate large and small file counts for charts
-      int largeFileCount = 0;
-      int smallFileCount = 0;
-      
-      for (final file in files) {
-        if (file.size > 2 * 1024 * 1024) { // > 2MB
-          largeFileCount++;
-        } else {
-          smallFileCount++;
-        }
+      final (files, isFromCache) = await listFilesUseCase.callWithCacheFlag(isOnline: true);
+      if (files.isEmpty) {
+        emit(NoDataAvailable());
+      } else {
+        emit(FileLoaded(files, largeFileCount: files.where((f) => f.size > 2 * 1024 * 1024).length, smallFileCount: files.where((f) => f.size <= 2 * 1024 * 1024).length, isFromCache: isFromCache));
       }
-      
-      emit(FileLoaded(files, largeFileCount: largeFileCount, smallFileCount: smallFileCount));
     } catch (e) {
-      emit(FileError(e.toString()));
+      emit(NoDataAvailable());
     }
   }
 
@@ -140,11 +176,16 @@ class FileBloc extends Bloc<FileEvent, FileState> {
       emit(FileError(e.toString()));
     }
   }
-} 
+}
 
 class _FilesUpdatedEvent extends FileEvent {
   final List<FileEntity> files;
   final int largeFileCount;
   final int smallFileCount;
   _FilesUpdatedEvent(this.files, this.largeFileCount, this.smallFileCount);
+}
+
+class ConnectivityChangedEvent extends FileEvent {
+  final bool isOnline;
+  ConnectivityChangedEvent(this.isOnline);
 } 

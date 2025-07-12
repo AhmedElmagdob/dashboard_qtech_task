@@ -7,11 +7,13 @@ import '../../../../features/files/presentation/bloc/file_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ProjectOverview extends StatelessWidget {
-  const ProjectOverview({Key? key}) : super(key: key);
+  final FileBloc fileBloc;
+  const ProjectOverview({Key? key, required this.fileBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FileBloc, FileState>(
+      bloc: fileBloc,
       builder: (context, fileState) {
         int largeFileCount = 0;
         int smallFileCount = 0;
@@ -72,44 +74,69 @@ class _ProjectOverviewChartContent extends StatelessWidget {
           const Text('Project Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           SizedBox(
-            height: 160,
+            height: 170,
             child: fileState is FileLoading
                 ? Center(
-                    child: Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _shimmerBar(height: 40, width: 12),
-                          const SizedBox(width: 8),
-                          _shimmerBar(height: 60, width: 12),
-                          const SizedBox(width: 8),
-                          _shimmerBar(height: 30, width: 12),
-                          const SizedBox(width: 8),
-                          _shimmerBar(height: 70, width: 12),
-                        ],
+                    child: SizedBox(
+
+                      child: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            _shimmerBar(height: 40, width: 12),
+                            const SizedBox(width: 8),
+                            _shimmerBar(height: 60, width: 12),
+                            const SizedBox(width: 8),
+                            _shimmerBar(height: 30, width: 12),
+                            const SizedBox(width: 8),
+                            _shimmerBar(height: 70, width: 12),
+                          ],
+                        ),
                       ),
                     ),
                   )
-                : SfCircularChart(
-                    legend: const Legend(isVisible: true, position: LegendPosition.bottom),
-                    series: <DoughnutSeries<_ChartData, String>>[
-                      DoughnutSeries<_ChartData, String>(
-                        dataSource: chartData,
-                        xValueMapper: (_ChartData d, _) => d.label,
-                        yValueMapper: (_ChartData d, _) => d.value,
-                        pointColorMapper: (_ChartData d, _) => d.color,
-                        dataLabelSettings: DataLabelSettings(
-                          isVisible: !isEmpty,
-                          textStyle: const TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        radius: '100%',
-                        innerRadius: '50%',
+                : Center(
+                  child: SizedBox(
+                      width: 160,
+                      height: 170,
+                    child: SfCircularChart(
+                        legend: const Legend(isVisible: true, position: LegendPosition.bottom),
+                        series: <RadialBarSeries<_ChartData, String>>[
+                          RadialBarSeries<_ChartData, String>(
+
+                            dataSource: chartData,
+                            xValueMapper: (_ChartData d, _) => d.label,
+                            yValueMapper: (_ChartData d, _) => d.value,
+                            pointColorMapper: (_ChartData d, _) => d.color,
+                            dataLabelMapper: (_ChartData d, _) => '${d.value} file${d.value == 1 ? '' : 's'}',
+                            dataLabelSettings: DataLabelSettings(
+                              isVisible: !isEmpty,
+                              textStyle: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: theme.brightness == Brightness.dark ? Colors.white : Colors.black,
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 2,
+                                    color: theme.brightness == Brightness.dark ? Colors.black : Colors.white,
+                                    offset: Offset(0.5, 0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            cornerStyle: CornerStyle.bothCurve,
+                            // maximumValue: 200,
+                            gap: '10%',
+                            radius: '100%',
+                            innerRadius: '70%',
+                          ),
+                        ],
                       ),
-                    ],
                   ),
+                ),
           ),
         ],
       ),
@@ -132,5 +159,6 @@ class _ChartData {
   final String label;
   final int value;
   final Color color;
+
   _ChartData(this.label, this.value, this.color);
-} 
+}

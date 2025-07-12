@@ -4,7 +4,8 @@ import '../cubit/sidebar_cubit.dart';
 
 class Sidebar extends StatelessWidget {
   final bool isOpen;
-  const Sidebar({Key? key, this.isOpen = true}) : super(key: key);
+  final SidebarCubit sidebarCubit;
+  const Sidebar({Key? key, this.isOpen = true, required this.sidebarCubit}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +14,7 @@ class Sidebar extends StatelessWidget {
         ? const Color(0xFF1A1A20)
         : const Color(0xFF2C2C34);
     return BlocBuilder<SidebarCubit, SidebarState>(
+      bloc: sidebarCubit,
       builder: (context, state) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -62,31 +64,31 @@ class Sidebar extends StatelessWidget {
                               icon: Icons.dashboard,
                               label: 'Project',
                               selected: state.selectedIndex == 0,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(0),
+                              onTap: () => sidebarCubit.selectIndex(0),
                             ),
                             _SidebarItem(
                               icon: Icons.shopping_cart,
                               label: 'E-commerce',
                               selected: state.selectedIndex == 1,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(1),
+                              onTap: () => sidebarCubit.selectIndex(1),
                             ),
                             _SidebarItem(
                               icon: Icons.calendar_today,
                               label: 'Calendar',
                               selected: state.selectedIndex == 2,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(2),
+                              onTap: () => sidebarCubit.selectIndex(2),
                             ),
                             _SidebarItem(
                               icon: Icons.chat,
                               label: 'Chat',
                               selected: state.selectedIndex == 3,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(3),
+                              onTap: () => sidebarCubit.selectIndex(3),
                             ),
                             _SidebarItem(
                               icon: Icons.contacts,
                               label: 'Contacts',
                               selected: state.selectedIndex == 4,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(4),
+                              onTap: () => sidebarCubit.selectIndex(4),
                             ),
                           ],
                         )
@@ -95,27 +97,27 @@ class Sidebar extends StatelessWidget {
                             _SidebarIcon(
                               icon: Icons.dashboard,
                               selected: state.selectedIndex == 0,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(0),
+                              onTap: () => sidebarCubit.selectIndex(0),
                             ),
                             _SidebarIcon(
                               icon: Icons.shopping_cart,
                               selected: state.selectedIndex == 1,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(1),
+                              onTap: () => sidebarCubit.selectIndex(1),
                             ),
                             _SidebarIcon(
                               icon: Icons.calendar_today,
                               selected: state.selectedIndex == 2,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(2),
+                              onTap: () => sidebarCubit.selectIndex(2),
                             ),
                             _SidebarIcon(
                               icon: Icons.chat,
                               selected: state.selectedIndex == 3,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(3),
+                              onTap: () => sidebarCubit.selectIndex(3),
                             ),
                             _SidebarIcon(
                               icon: Icons.contacts,
                               selected: state.selectedIndex == 4,
-                              onTap: () => context.read<SidebarCubit>().selectIndex(4),
+                              onTap: () => sidebarCubit.selectIndex(4),
                             ),
                           ],
                         ),

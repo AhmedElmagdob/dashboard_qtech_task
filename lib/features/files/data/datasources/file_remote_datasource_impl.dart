@@ -3,18 +3,16 @@ import 'file_remote_datasource.dart';
 class FileRemoteDataSourceImpl implements FileRemoteDataSource {
   @override
   Future<List<dynamic>> getFiles() async {
-    // TODO: Implement actual file fetching logic
-    return [];
+    throw UnimplementedError();
   }
 
   @override
   Future<void> deleteFile(String fileKey) async {
-    // TODO: Implement actual file deletion logic
+    throw UnimplementedError();
   }
 
   @override
   Future<Map<String, dynamic>> downloadFile(String fileKey) async {
-    // TODO: Implement actual file download logic
-    return {};
+    throw UnimplementedError();
   }
-} 
+}

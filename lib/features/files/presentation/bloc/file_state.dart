@@ -10,8 +10,9 @@ class FileLoaded extends FileState {
   final List<dynamic> files;
   final int largeFileCount;
   final int smallFileCount;
+  final bool isFromCache;
   
-  FileLoaded(this.files, {this.largeFileCount = 0, this.smallFileCount = 0});
+  FileLoaded(this.files, {this.largeFileCount = 0, this.smallFileCount = 0, this.isFromCache = false});
 }
 
 class FileError extends FileState {
@@ -32,3 +33,10 @@ class DropzoneError extends FileState {
   final String message;
   DropzoneError(this.message);
 } 
+
+class ConnectivityStatusChanged extends FileState {
+  final bool isOnline;
+  ConnectivityStatusChanged(this.isOnline);
+} 
+
+class NoDataAvailable extends FileState {} 

@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/sidebar_cubit.dart';
 
 class ProjectSummary extends StatelessWidget {
-  const ProjectSummary({Key? key}) : super(key: key);
+  final SidebarCubit sidebarCubit;
+  const ProjectSummary({Key? key, required this.sidebarCubit}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SidebarCubit, SidebarState>(
+      bloc: sidebarCubit,
       builder: (context, sidebarState) {
         return _ProjectSummaryContent(sidebarState: sidebarState);
       },
@@ -114,6 +116,7 @@ class _StatusCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool compact;
+
   const _StatusCard({
     required this.icon,
     required this.iconBg,
@@ -131,11 +134,14 @@ class _StatusCard extends StatelessWidget {
         : Colors.grey.shade200;
     return Container(
       decoration: BoxDecoration(
-        color: theme.brightness == Brightness.dark ? const Color(0xFF23232A) : Colors.white,
+        color: theme.brightness == Brightness.dark
+            ? const Color(0xFF23232A)
+            : Colors.white,
         borderRadius: BorderRadius.circular(compact ? 5 : 8),
         border: Border.all(color: borderColor),
       ),
-      padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12, vertical: compact ? 8 : 12),
+      padding: EdgeInsets.symmetric(
+          horizontal: compact ? 8 : 12, vertical: compact ? 8 : 12),
       child: Row(
         children: [
           Container(
@@ -151,9 +157,11 @@ class _StatusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: compact ? 13 : 15)),
+                Text(title, style: TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: compact ? 13 : 15)),
                 SizedBox(height: compact ? 1 : 2),
-                Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: compact ? 11 : 13)),
+                Text(subtitle, style: TextStyle(
+                    color: Colors.grey[600], fontSize: compact ? 11 : 13)),
               ],
             ),
           ),
@@ -162,10 +170,11 @@ class _StatusCard extends StatelessWidget {
               border: Border.all(color: Colors.grey.shade300),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.priority_high, size: compact ? 14 : 18, color: Colors.black54),
+            child: Icon(Icons.priority_high, size: compact ? 14 : 18,
+                color: Colors.black54),
           ),
         ],
       ),
     );
   }
-} 
+}

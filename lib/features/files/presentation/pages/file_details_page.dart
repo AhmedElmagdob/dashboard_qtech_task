@@ -20,12 +20,14 @@ class FileDetailsPage extends StatefulWidget {
   final String title;
   final Widget chartWidget;
   final VoidCallback onBack;
+  final FileBloc fileBloc;
   
   const FileDetailsPage({
     Key? key, 
     required this.title, 
     required this.chartWidget, 
-    required this.onBack
+    required this.onBack,
+    required this.fileBloc,
   }) : super(key: key);
 
   @override
@@ -33,30 +35,25 @@ class FileDetailsPage extends StatefulWidget {
 }
 
 class _FileDetailsPageState extends State<FileDetailsPage> {
-  late final FileBloc fileBloc;
-
   @override
   void initState() {
     super.initState();
-    fileBloc = sl<FileBloc>();
-    fileBloc.add(StartListeningFilesEvent());
+    widget.fileBloc.add(StartListeningFilesEvent());
   }
 
   @override
   void dispose() {
-    fileBloc.add(StopListeningFilesEvent());
+    widget.fileBloc.add(StopListeningFilesEvent());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<FileBloc>.value(
-      value: fileBloc,
-      child: _FileDetailsPageContent(
-        title: widget.title, 
-        chartWidget: widget.chartWidget, 
-        onBack: widget.onBack,
-      ),
+    return _FileDetailsPageContent(
+      title: widget.title, 
+      chartWidget: widget.chartWidget, 
+      onBack: widget.onBack,
+      fileBloc: widget.fileBloc,
     );
   }
 }
@@ -65,11 +62,13 @@ class _FileDetailsPageContent extends StatelessWidget {
   final String title;
   final Widget chartWidget;
   final VoidCallback onBack;
+  final FileBloc fileBloc;
   
   const _FileDetailsPageContent({
     required this.title, 
     required this.chartWidget, 
-    required this.onBack
+    required this.onBack,
+    required this.fileBloc,
   }) : super();
 
   @override
@@ -78,6 +77,7 @@ class _FileDetailsPageContent extends StatelessWidget {
     final cardColor = isDark ? const Color(0xFF23232A) : Colors.white;
     final appBarTextColor = isDark ? Colors.white : Colors.black87;
     return BlocListener<FileBloc, FileState>(
+      bloc: fileBloc,
       listener: (context, state) {
         if (state is DropzoneSuccess || state is DropzoneError) {
           Navigator.of(context, rootNavigator: true).maybePop();
@@ -226,7 +226,7 @@ class _FileDetailsPageContent extends StatelessWidget {
   }
 
   Widget _buildUploadSection(BuildContext context, Color cardColor) {
-    return _UploadSection(cardColor: cardColor);
+    return _UploadSection(cardColor: cardColor, fileBloc: fileBloc);
   }
 
   Widget _buildFilesListSection(BuildContext context, Color cardColor) {
@@ -288,6 +288,7 @@ class _FileDetailsPageContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           BlocBuilder<FileBloc, FileState>(
+            bloc: fileBloc,
             builder: (context, state) {
               if (state is FileLoading) {
                 return const Center(
@@ -335,6 +336,39 @@ class _FileDetailsPageContent extends StatelessWidget {
                   children: state.files.map<Widget>((file) {
                     return _buildFileItem(context, file as FileEntity);
                   }).toList(),
+                );
+              } else if (state is NoDataAvailable) {
+                return SizedBox(
+                  height: 220,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.cloud_off,
+                          size: 48,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No data available',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Connect to the internet to load data.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               } else if (state is FileError) {
                 return Container(
@@ -628,7 +662,6 @@ class _FileDetailsPageContent extends StatelessWidget {
     }
 
     // Delete file using the BLoC immediately
-    final fileBloc = context.read<FileBloc>();
     fileBloc.add(DeleteFileEvent(fileKey: file.key!));
     
     // Show success message immediately
@@ -798,7 +831,8 @@ class _FileDetailsPageContent extends StatelessWidget {
 
 class _UploadSection extends StatelessWidget {
   final Color cardColor;
-  const _UploadSection({required this.cardColor});
+  final FileBloc fileBloc;
+  const _UploadSection({required this.cardColor, required this.fileBloc});
 
   @override
   Widget build(BuildContext context) {
@@ -818,8 +852,8 @@ class _UploadSection extends StatelessWidget {
         ],
       ),
       child: BlocBuilder<FileBloc, FileState>(
+        bloc: fileBloc,
         builder: (context, state) {
-          final fileBloc = context.read<FileBloc>();
           Widget dropzoneWidget;
           if (kIsWeb) {
             if (state is DropzoneFileDropped) {
@@ -954,8 +988,8 @@ class _UploadSection extends StatelessWidget {
                 width: double.infinity,
                 height: 44,
                 child: BlocBuilder<FileBloc, FileState>(
+                  bloc: fileBloc,
                   builder: (context, state) {
-                    final fileBloc = context.read<FileBloc>();
                     final isUploading = state is DropzoneUploading;
                     final hasFile = state is DropzoneFileDropped;
                     return ElevatedButton.icon(

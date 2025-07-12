@@ -8,9 +8,15 @@ import '../datasources/file_remote_datasource.dart';
 import '../models/file_model.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:async/async.dart';
+import 'package:hive/hive.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class FileRepositoryImpl implements FileRepository {
-  final database = FirebaseDatabase.instance.ref();
+  // Use the correct database URL for your region
+  final database = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL: 'https://qtech-dashboard-taks-default-rtdb.europe-west1.firebasedatabase.app',
+  ).ref();
   final FileRemoteDataSource remoteDataSource;
 
   FileRepositoryImpl(this.remoteDataSource);
@@ -37,29 +43,116 @@ class FileRepositoryImpl implements FileRepository {
     try {
       await database.child('files').push().set(fileMeta);
     } catch (e) {
-      print('Error uploading file to Realtime Database: $e');
       rethrow;
     }
   }
 
   @override
   Future<List<FileEntity>> listFiles() async {
+    final cacheBox = Hive.box('file_cache');
     try {
       final snapshot = await database.child('files').get();
-      if (!snapshot.exists) return [];
+      if (!snapshot.exists) {
+        // If no data in Firebase, try cache
+        final cached = cacheBox.get('files');
+        if (cached != null) {
+          final files = (cached as List)
+              .map((e) => FileModel.fromJson(e['key'] as String, Map<String, dynamic>.from(e['data'])))
+              .toList();
+          files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+          return files;
+        }
+        return [];
+      }
       final files = <FileEntity>[];
       final data = snapshot.value as Map<dynamic, dynamic>;
+      final cacheList = <Map<String, dynamic>>[];
       data.forEach((key, value) {
-        files.add(FileModel.fromJson(
+        final file = FileModel.fromJson(
           key.toString(),
           Map<String, dynamic>.from(value as Map),
-        ));
+        );
+        files.add(file);
+        cacheList.add({'key': key.toString(), 'data': Map<String, dynamic>.from(value as Map)});
       });
       files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+      // Cache the latest file list
+      await cacheBox.put('files', cacheList);
       return files;
     } catch (e) {
-      print('Error fetching files from Realtime Database: $e');
+      // On error, return cached data if available
+      final cached = cacheBox.get('files');
+      if (cached != null) {
+        final files = (cached as List)
+            .map((e) => FileModel.fromJson(e['key'] as String, Map<String, dynamic>.from(e['data'])))
+            .toList();
+        files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+        return files;
+      }
       return [];
+    }
+  }
+
+  /// Returns a tuple: (files, isFromCache)
+  Future<(List<FileEntity>, bool)> listFilesWithCacheFlag({required bool isOnline}) async {
+    final cacheBox = Hive.box('file_cache');
+    if (!isOnline) {
+      final cached = cacheBox.get('files');
+      if (cached != null) {
+        final files = (cached as List)
+            .map((e) => FileModel.fromJson(
+                e['key'] as String,
+                e['data'] is Map ? Map<String, dynamic>.from(e['data']) : <String, dynamic>{},
+            ))
+            .toList();
+        files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+        return (files, true);
+      }
+      return (<FileEntity>[], true);
+    }
+    try {
+      final snapshot = await database.child('files').get();
+      if (!snapshot.exists) {
+        final cached = cacheBox.get('files');
+        if (cached != null) {
+          final files = (cached as List)
+              .map((e) => FileModel.fromJson(
+                  e['key'] as String,
+                  e['data'] is Map ? Map<String, dynamic>.from(e['data']) : <String, dynamic>{},
+              ))
+              .toList();
+          files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+          return (files, true);
+        }
+        return (<FileEntity>[], true);
+      }
+      final files = <FileEntity>[];
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      final cacheList = <Map<String, dynamic>>[];
+      data.forEach((key, value) {
+        final file = FileModel.fromJson(
+          key.toString(),
+          value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{},
+        );
+        files.add(file);
+        cacheList.add({'key': key.toString(), 'data': value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{}});
+      });
+      files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+      await cacheBox.put('files', cacheList);
+      return (files, false);
+    } catch (e) {
+      final cached = cacheBox.get('files');
+      if (cached != null) {
+        final files = (cached as List)
+            .map((e) => FileModel.fromJson(
+                e['key'] as String,
+                e['data'] is Map ? Map<String, dynamic>.from(e['data']) : <String, dynamic>{},
+            ))
+            .toList();
+        files.sort((a, b) => b.uploadTime.compareTo(a.uploadTime));
+        return (files, true);
+      }
+      return (<FileEntity>[], true);
     }
   }
 
@@ -68,7 +161,6 @@ class FileRepositoryImpl implements FileRepository {
     try {
       await database.child('files').child(fileKey).remove();
     } catch (e) {
-      print('Error deleting file from Realtime Database: $e');
       rethrow;
     }
   }
@@ -80,17 +172,13 @@ class FileRepositoryImpl implements FileRepository {
       if (!snapshot.exists) {
         throw Exception('File not found');
       }
-      
       final data = snapshot.value as Map<dynamic, dynamic>;
       final content = data['content'] as String?;
-      
       if (content == null) {
         throw Exception('File content not found');
       }
-      
       return base64Decode(content);
     } catch (e) {
-      print('Error downloading file from Realtime Database: $e');
       rethrow;
     }
   }

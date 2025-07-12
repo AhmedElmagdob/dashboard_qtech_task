@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/sidebar_cubit.dart';
 import 'package:dashboard_qtech_task/features/dashboard/presentation/widgets/web_image_widget.dart'as wid;
 class ProjectCardList extends StatelessWidget {
-  const ProjectCardList({Key? key}) : super(key: key);
+  final SidebarCubit sidebarCubit;
+  const ProjectCardList({Key? key, required this.sidebarCubit}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SidebarCubit, SidebarState>(
+      bloc: sidebarCubit,
       builder: (context, sidebarState) {
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -102,23 +104,41 @@ class _ProjectCardListContent extends StatelessWidget {
         ),
       );
     } else {
-      // On desktop/web: 4 cards, no scrolling, fill available space
-      return SizedBox(
-        height: 120,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(projects.length, (i) => SizedBox(
-            width: cardWidth,
-            child: ProjectCard(
+      if(availableWidth < 700) {
+        // On desktop: horizontal scrollable list with smaller cards
+        return SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: projects.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, i) => ProjectCard(
               title: projects[i]['title'] as String,
               subtitle: projects[i]['subtitle'] as String,
               time: projects[i]['time'] as String,
               avatars: projects[i]['avatars'] as List<String>,
-              width: cardWidth,
+              width: 240,
             ),
-          )),
-        ),
-      );
+          ),
+        );
+      }else {
+        return SizedBox(
+          height: 120,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(projects.length, (i) => SizedBox(
+              width: cardWidth,
+              child: ProjectCard(
+                title: projects[i]['title'] as String,
+                subtitle: projects[i]['subtitle'] as String,
+                time: projects[i]['time'] as String,
+                avatars: projects[i]['avatars'] as List<String>,
+                width: cardWidth,
+              ),
+            )),
+          ),
+        );
+      }
     }
   }
 }
@@ -214,4 +234,4 @@ class _OverlappingAvatars extends StatelessWidget {
       ),
     );
   }
-} 
+  }

@@ -32,7 +32,7 @@ class FilesModule {
     sl.registerLazySingleton(() => ResetDropzoneUseCase());
 
     // BLoC
-    sl.registerFactory(() => FileBloc(
+    sl.registerLazySingleton(() => FileBloc(
       listFilesUseCase: sl<ListFilesUseCase>(),
       uploadFileUseCase: sl<UploadFileUseCase>(),
       deleteFileUseCase: sl<DeleteFileUseCase>(),
