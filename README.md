@@ -77,7 +77,7 @@ The app is fully **responsive** and works seamlessly on **web** and **mobile**.
 - **Mobile:** Stacked widgets, horizontal scroll for cards, mobile drawer sidebar
 - **Consistent experience** across all devices
 
-![Mobile Screenshot](assets/screenshots/mobile_dashboard.png)
+![Mobile Screenshot](assets/screenshots/mobile_dashboard.jpg)
 
 ---
 
@@ -136,8 +136,8 @@ lib/
 
 ### Mobile
 <p float="left">
-  <img src="assets/screenshots/mobile_dashboard_light.png" width="45%" alt="Mobile Light"/>
-  <img src="assets/screenshots/mobile_dashboard_dark.png" width="45%" alt="Mobile Dark"/>
+  <img src="assets/screenshots/mobile_dashboard_light.jpg" width="45%" alt="Mobile Light"/>
+  <img src="assets/screenshots/mobile_dashboard_dark.jpg" width="45%" alt="Mobile Dark"/>
 </p>
 
 ### Team Members
