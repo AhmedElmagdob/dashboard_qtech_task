@@ -133,7 +133,10 @@ lib/
   <img src="assets/screenshots/dashboard_main_light.png" width="45%" alt="Web Light"/>
   <img src="assets/screenshots/dashboard_main_dark.png" width="45%" alt="Web Dark"/>
 </p>
-
+<p float="left">
+  <img src="assets/screenshots/upload_files_light.png" width="45%" alt="Web Light"/>
+  <img src="assets/screenshots/upload_file_dark.png" width="45%" alt="Web Dark"/>
+</p>
 ### Mobile
 <p float="left">
   <img src="assets/screenshots/mobile_dashboard_light.jpg" width="45%" alt="Mobile Light"/>
